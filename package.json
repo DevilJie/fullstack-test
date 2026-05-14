@@ -5,7 +5,9 @@
   "description": "全流程测试协调 skill",
   "main": "scripts/coord.js",
   "openclaw": {
-    "extensions": ["./index.ts"],
+    "extensions": [
+      "./index.ts"
+    ],
     "compat": {
       "pluginApi": ">=2026.3.24-beta.2",
       "minGatewayVersion": "2026.3.24-beta.2"
@@ -25,5 +27,8 @@
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }

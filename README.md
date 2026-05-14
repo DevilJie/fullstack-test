@@ -250,31 +250,38 @@ Fullstack Test 是一款**全流程测试协调插件**，用于前后端分离�
 #### OpenClaw 用户
 
 ```bash
-# 通过 ClawHub 安装
-openclaw plugins install /home/czy/workspace/ai/skills/fullstack-test
+# 一键安装（推荐，自动检测本地源码）
+bash <(curl -sL https://codeup.aliyun.com/668647a62300ebb98e4e54fd/hsj/skills/fullstack-test/raw/install.sh) all
 
-# 或使用便捷命令
-openclaw skill install fullstack-test
+# 或手动克隆后安装
+git clone https://codeup.aliyun.com/668647a62300ebb98e4e54fd/hsj/skills/fullstack-test.git ~/.local/share/fullstack-test
+bash ~/.local/share/fullstack-test/install.sh
 ```
 
 #### Claude Code / Codex 用户
 
 ```bash
-# 创建软链接到 Claude Code skills 目录
-mkdir -p ~/.claude/skills
-ln -sf /home/czy/workspace/ai/skills/fullstack-test ~/.claude/skills/fullstack-test
+# 一键安装
+bash <(curl -sL https://codeup.aliyun.com/668647a62300ebb98e4e54fd/hsj/skills/fullstack-test/raw/install.sh) claude
+
+# 或手动克隆后安装
+git clone https://codeup.aliyun.com/668647a62300ebb98e4e54fd/hsj/skills/fullstack-test.git ~/.local/share/fullstack-test
+bash ~/.local/share/fullstack-test/install.sh claude
 ```
 
-#### 通用安装（任意平台）
+#### 手动安装（任意平台）
 
 ```bash
-# 克隆或复制 skill 到指定位置
-git clone <仓库地址> ~/path/to/fullstack-test
+# 1. 克隆仓库
+git clone https://<token>@codeup.aliyun.com/668647a62300ebb98e4e54fd/hsj/skills/fullstack-test.git ~/fullstack-test
 
-# 为所有平台创建软链接
+# 2. 创建软链接（根据需要选择）
 mkdir -p ~/.openclaw/skills ~/.claude/skills
-ln -sf ~/path/to/fullstack-test ~/.openclaw/skills/fullstack-test
-ln -sf ~/path/to/fullstack-test ~/.claude/skills/fullstack-test
+ln -sf ~/fullstack-test ~/.openclaw/skills/fullstack-test
+ln -sf ~/fullstack-test ~/.claude/skills/fullstack-test
+
+# 3. 重启 OpenClaw gateway（如使用 OpenClaw）
+openclaw gateway restart
 ```
 
 ### 快速开始

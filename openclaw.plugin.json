@@ -1,0 +1,26 @@
+{
+  "id": "fullstack-test",
+  "name": "Fullstack Test",
+  "description": "全流程测试协调 - 前后端分离项目的联调测试工作流。触发条件：用户提到联调测试、coord 命令、或 fullstack-test skill 相关操作",
+  "contracts": {
+    "commands": ["coord-start", "coord-status", "coord-poll", "coord-test-start", "coord-resolve", "coord-done", "coord-backend-config"],
+    "tools": ["coord_start", "coord_status", "coord_poll", "coord_test_start", "coord_resolve", "coord_done", "coord_backend_config"]
+  },
+  "activation": {
+    "onStartup": false,
+    "onCommand": ["coord-start", "coord-status", "coord-poll", "coord-test-start", "coord-resolve", "coord-done", "coord-backend-config"]
+  },
+  "toolMetadata": {
+    "coord_start": { "optional": false },
+    "coord_status": { "optional": false },
+    "coord_poll": { "optional": false },
+    "coord_test_start": { "optional": false },
+    "coord_resolve": { "optional": false },
+    "coord_done": { "optional": false },
+    "coord_backend_config": { "optional": false }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}

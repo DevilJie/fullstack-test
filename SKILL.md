@@ -6,9 +6,17 @@ description: >
   核心理念：
   - "Thinking time is more valuable than coding time" - 想清楚比写代码更重要
   - 三个会话角色：后端开发、前端开发、测试
+  - 每个角色在执行工作前必须加载角色规范
   - 通过 feedback.md 登记问题，通过 closed.md 归档已验证问题
   - 支持 feedback 链式流转（测试→前端→后端）
   - 全自动 Playwright 浏览器测试
+
+  角色规范模板位置：
+  - templates/roles/backend.md - Backend Architect 规范
+  - templates/roles/frontend.md - Frontend Developer 规范
+  - templates/roles/testing.md - API Tester 规范
+
+  ⚠️ 重要：每个角色在执行工作之前，必须先阅读并理解对应的角色规范
 
   首次使用 /coord-start 初始化项目，之后各会话使用对应命令协调工作。
 
@@ -30,6 +38,31 @@ tags:
 ---
 
 # Fullstack Test - 全流程测试协调
+
+## ⚠️ 重要：角色规范加载要求
+
+**每次开始工作之前，必须加载对应角色的规范文档。**
+
+### 如何加载角色规范
+
+当你以某个角色开始工作时，先阅读规范文档：
+
+```
+📋 正在加载 {角色} 规范...
+
+请先阅读：
+{templates/roles/{角色}.md}
+
+理解规范后再开始工作。
+```
+
+### 角色规范概览
+
+| 角色 | 规范文件 | 核心指标 |
+|------|----------|----------|
+| 🔧 backend | templates/roles/backend.md | API < 200ms, 可用性 > 99.9% |
+| 🎨 frontend | templates/roles/frontend.md | Lighthouse > 90, 首屏 < 3s |
+| 🧪 testing | templates/roles/testing.md | 覆盖率 > 95%, 安全优先 |
 
 ## 概述
 
@@ -95,30 +128,29 @@ tags:
 项目文件结构：
 
 ```
-{项目根目录}/
+{工作目录}/
 ├── service-info.json        # ⭐ 项目级（所有需求共享同一份服务配置）
 ├── {需求编号1}/
 │   ├── README.md            # 需求协调手册
-│   ├── feedback.md         # 需求级问题追踪
-│   ├── closed.md           # 需求级已关闭问题
-│   ├── backend/
-│   │   ├── spec.md
-│   │   ├── plan.md
-│   │   └── api-spec.md    # 联调必需
-│   ├── frontend/
-│   │   ├── spec.md
-│   │   ├── plan.md
-│   │   └── pages.md        # 联调必需
+│   ├── feedback.md          # 问题追踪（open/acknowledged/in_progress）
+│   ├── closed.md            # 已验证通过的问题归档
+│   ├── backend/             # 后端工作目录（可选）
+│   ├── frontend/            # 前端工作目录（可选）
 │   └── testing/
-│       ├── test-plan.md
-│       ├── session.ts
-│       └── reports/
-│           └── final-report.md
+│       ├── test-cases.md    # 测试案例（持续累加）
+│       └── reports/         # 测试报告目录
+│           └── final/       # 最终报告
 └── {需求编号2}/
     └── ...
 ```
 
-**关键**：`service-info.json` 放在项目根目录，所有需求共享同一份服务配置（URL、API规则等）。每个需求目录下只放该需求特有的内容。
+**说明**：
+- `service-info.json` 放在工作目录，所有需求共享同一份服务配置
+- `feedback.md` 记录未关闭问题（测试发现缺陷→前端/后端认领→修复→复测验证通过→移入 closed.md）
+- `closed.md` 归档已验证通过的问题
+- `testing/test-cases.md` 用于测试案例，会持续累加
+
+**关键**：`service-info.json` 放在工作目录根目录，所有需求共享同一份服务配置（URL、API规则等）。
 
 ## 核心理念
 

@@ -42,7 +42,29 @@ tags:
 直接回车使用默认：REQ-001
 ```
 
-### 步骤 3：询问角色
+### 步骤 3：检查 service-info.json 是否存在
+
+**重要：在用户选择角色之前，先检查是否有可用的全局配置**
+
+检查 `{工作目录}/service-info.json` 是否存在：
+
+- **文件不存在** → 继续步骤 4，用户选择角色
+- **文件存在** → 读取已有配置，显示后让用户选择策略：
+  ```
+  📋 检测到已有服务配置
+
+  后端 URL: {backend.url}
+  前端 URL: {frontend.url}
+
+  🔧 请选择需求的服务配置策略：
+
+  1️⃣  沿用已有配置（推荐） - 所有需求共用同一份配置
+  2️⃣  创建独立配置 - 本需求使用单独的 service-info.json
+
+  输入数字：1
+  ```
+
+### 步骤 4：询问角色
 
 ```
 👤 请选择你的角色：
@@ -54,9 +76,41 @@ tags:
 输入数字或角色名称：backend
 ```
 
-### 步骤 4：根据角色配置
+### 步骤 5：加载角色规范
 
-#### 后端开发
+**重要：必须先加载角色规范**
+
+根据选择的角色，指向对应的规范文件：
+
+#### 🔧 后端开发 (Backend Architect)
+```
+📋 Backend Architect 角色规范
+
+规范文件：
+/home/czy/workspace/ai/skills/fullstack-test/templates/roles/backend.md
+```
+
+#### 🎨 前端开发 (Frontend Developer)
+```
+📋 Frontend Developer 角色规范
+
+规范文件：
+/home/czy/workspace/ai/skills/fullstack-test/templates/roles/frontend.md
+```
+
+#### 🧪 测试 (API Tester)
+```
+📋 API Tester 角色规范
+
+规范文件：
+/home/czy/workspace/ai/skills/fullstack-test/templates/roles/testing.md
+```
+
+
+### 步骤 6：根据角色配置
+
+#### 后端开发 (backend)
+如果步骤 3 用户选择了"沿用已有配置"，跳过 URL 输入；否则：
 ```
 🔗 请输入后端服务 URL：
 直接回车使用默认：http://localhost:8080
@@ -67,40 +121,49 @@ tags:
 - 状态码字段名（默认：code）：code
 ```
 
-#### 前端开发
+**后端额外配置**：
+```
+📚 在线接口文档地址（可选）：
+例如：https://api.example.com/docs, http://localhost:8080/swagger
+直接回车跳过，稍后可通过 /coord-backend-config 配置
+```
+
+#### 前端开发 (frontend)
+如果步骤 3 用户选择了"沿用已有配置"，跳过 URL 输入；否则：
 ```
 🔗 请输入前端服务 URL：
 直接回车使用默认：http://localhost:5173
 ```
 
-#### 测试
+#### 测试 (testing)
+**重要：测试角色需要询问测试范围**
+
 ```
-🧪 测试配置说明：
-- 测试会话需要等待 backend/api-spec.md 和 frontend/pages.md 就绪
-- 准备好后运行 /coord-test-start 启动测试
+🧪 请描述本次测试的内容：
+
+说明：请详细描述测试范围，包括：
+- 测试的功能模块（如：用户登录、商品搜索）
+- 是否有开发计划文档（.md 文件路径）
+- 是否有设计文档（.md 文件路径）
+- 测试场景（如：正常流程、异常流程、边界条件）
+
+输入方式：
+1️⃣  提供文档路径（如：/path/to/plan.md）
+2️⃣  自然语言描述测试内容
+3️⃣  直接回车跳过，稍后补充
+
+你的输入：
 ```
 
-### 步骤 5：检查 service-info.json 是否存在
+**如果用户提供了文档路径**，读取并分析文档内容：
+```bash
+# 读取用户提供的文档
+cat {文档路径}
+```
 
-检查 `{工作目录}/service-info.json` 是否存在：
+**如果用户提供了自然语言描述**，记录描述内容。
 
-- **已存在**：询问用户选择配置策略
-  ```
-  📋 检测到已有服务配置
-
-  🔧 请选择需求的服务配置策略：
-
-  1️⃣  沿用已有配置（推荐） - 所有需求共用同一份配置
-  2️⃣  创建独立配置 - 本需求使用单独的 service-info.json
-
-  输入数字：1
-  ```
-
-- **不存在**：创建新的 service-info.json（项目级）
-
-### 步骤 6：创建目录结构
-
-根据用户输入执行以下操作：
+### 步骤 7：创建目录结构
 
 ```bash
 # 创建目录
@@ -143,6 +206,10 @@ cat > {工作目录}/{需求编号}/README.md << 'EOF'
 - /coord-resolve - 关闭问题
 - /coord-done - 完成联调
 - /coord-backend-config - 后端配置
+
+## 测试案例
+- 测试案例文档: {需求编号}/testing/test-cases.md
+- 测试报告目录: {需求编号}/testing/reports/
 EOF
 
 # 创建 feedback.md
@@ -152,9 +219,49 @@ cat > {工作目录}/{需求编号}/feedback.md << 'EOF'
 ## Items
 
 EOF
+
+# 创建 closed.md
+cat > {工作目录}/{需求编号}/closed.md << 'EOF'
+# Closed Issues - {需求编号}
+
+## 已验证通过的问题
+
+（问题修复并复测验证通过后移入此处归档）
+
+EOF
 ```
 
-### 步骤 7：确认完成
+### 步骤 8：创建测试案例文档（仅测试角色）
+
+如果用户选择了测试角色，创建测试案例文档：
+
+```bash
+# 创建测试案例目录和文档
+mkdir -p {工作目录}/{需求编号}/testing/reports
+
+# 如果用户提供了文档或描述，创建测试案例
+cat > {工作目录}/{需求编号}/testing/test-cases.md << 'EOF'
+# {需求编号} 测试案例
+
+## 测试范围
+
+{用户描述的测试内容或"待补充"}
+
+## 测试环境
+- 后端 URL: {backend.url}
+- 前端 URL: {frontend.url}
+- 创建时间: {ISO时间}
+
+## 测试案例
+
+### 待补充
+
+说明：测试案例将根据用户后续提供的测试内容持续累加。
+可以通过 /coord-test-start 或直接描述新测试内容来补充。
+EOF
+```
+
+### 步骤 9：确认完成
 
 ```
 ✅ 初始化完成！
@@ -181,6 +288,8 @@ EOF
 │   ├── backend/
 │   ├── frontend/
 │   └── testing/
+│       ├── test-cases.md     # 测试案例（测试角色）
+│       └── reports/          # 测试报告目录
 └── REQ-002/
 ```
 

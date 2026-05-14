@@ -1,0 +1,15 @@
+{
+  "name": "coord-start",
+  "version": "1.0.0",
+  "description": "Fullstack Test - Initialize Project",
+  "main": "start.js",
+  "bin": {
+    "coord-start": "./start.js"
+  },
+  "scripts": {
+    "start": "node start.js"
+  },
+  "dependencies": {
+    "inquirer": "^8.0.0"
+  }
+}

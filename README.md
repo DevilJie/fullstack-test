@@ -95,6 +95,28 @@ ln -sf ~/path/to/fullstack-test ~/.openclaw/skills/fullstack-test
 ln -sf ~/path/to/fullstack-test ~/.claude/skills/fullstack-test
 ```
 
+### Uninstall
+
+To remove the installed symlinks (does NOT delete the skill source files):
+
+```bash
+# Run the uninstall script
+bash install.sh uninstall
+
+# Or use the standalone uninstall script
+bash uninstall.sh
+```
+
+To also remove the skill source files:
+
+```bash
+# Remove symlinks
+bash uninstall.sh
+
+# Remove source files
+rm -rf /home/czy/workspace/ai/skills/fullstack-test
+```
+
 ### Quick Start
 
 #### 1. Initialize Project

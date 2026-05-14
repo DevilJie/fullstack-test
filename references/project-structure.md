@@ -1,27 +1,36 @@
 # 项目目录结构
 
-项目根目录由用户在初始化时指定，需求文件将创建在 `{项目根目录}/{需求编号}/` 下:
+## 目录布局
 
 ```
-{项目根目录}/{需求编号}/
-├── README.md                 # 项目协调手册
-├── service-info.json        # 服务配置（URL、状态、API规则）
-├── feedback.md             # 统一问题追踪（未关闭）
-├── closed.md               # 已关闭问题归档（仅测试/后端/前端确认后由测试写入）
-├── backend/
-│   ├── spec.md            # 设计文档
-│   ├── plan.md            # 开发计划
-│   └── api-spec.md        # 接口规范（联调必需）
-├── frontend/
-│   ├── spec.md            # 设计文档
-│   ├── plan.md            # 开发计划
-│   └── pages.md           # 测试页面清单（联调必需）
-└── testing/
-    ├── test-plan.md       # 测试计划
-    ├── session.ts         # Playwright 自动化脚本
-    └── reports/
-        └── final-report.md
+{项目根目录}/
+├── service-info.json        # ⭐ 项目级（所有需求共享同一份服务配置）
+├── {需求编号1}/
+│   ├── README.md            # 需求协调手册
+│   ├── feedback.md         # 需求级问题追踪
+│   ├── closed.md           # 需求级已关闭问题
+│   ├── backend/            # 后端开发文件
+│   │   ├── spec.md
+│   │   ├── plan.md
+│   │   └── api-spec.md    # 联调必需
+│   ├── frontend/            # 前端开发文件
+│   │   ├── spec.md
+│   │   ├── plan.md
+│   │   └── pages.md        # 联调必需
+│   └── testing/
+│       ├── test-plan.md
+│       ├── session.ts
+│       └── reports/
+│           └── final-report.md
+├── {需求编号2}/
+│   └── ...
 ```
+
+## 关键说明
+
+- **service-info.json** 放在**项目根目录**，所有需求共享同一份服务配置
+- 每个需求有独立的 `feedback.md` 和 `closed.md`
+- `backend/api-spec.md` 和 `frontend/pages.md` 是联调测试的前置条件
 
 ## 服务状态说明
 

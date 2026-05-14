@@ -144,28 +144,25 @@ coord-start
 
 ## 📁 创建的目录结构
 
-项目文件将创建在 `{项目根目录}/{需求编号}/` 下:
+项目文件结构：
 
 ```
-{项目根目录}/{需求编号}/
-├── README.md                 # 项目协调手册
-├── service-info.json        # 服务配置（URL、状态、API规则）
-├── feedback.md             # 统一问题追踪（未关闭）
-├── closed.md               # 已关闭问题归档
-├── backend/
-│   ├── spec.md            # 设计文档
-│   ├── plan.md            # 开发计划
-│   └── api-spec.md        # 接口规范（联调必需）
-├── frontend/
-│   ├── spec.md            # 设计文档
-│   ├── plan.md            # 开发计划
-│   └── pages.md           # 测试页面清单（联调必需）
-└── testing/
-    ├── test-plan.md       # 测试计划
-    ├── session.ts         # Playwright 自动化脚本
-    └── reports/
-        └── final-report.md
+{项目根目录}/
+├── service-info.json        # ⭐ 项目级别（所有需求共享同一份服务配置）
+├── {需求编号1}/
+│   ├── README.md            # 需求协调手册
+│   ├── feedback.md         # 需求级问题追踪
+│   ├── closed.md           # 需求级已关闭问题
+│   ├── backend/            # 后端开发文件
+│   ├── frontend/           # 前端开发文件
+│   └── testing/            # 测试文件
+├── {需求编号2}/
+│   └── ...
 ```
+
+**说明**：`service-info.json` 放在项目根目录，所有需求共享同一份服务配置（URL、API规则等）。
+
+需求目录下只放该需求特有的内容（feedback.md、closed.md、工作文件）。
 
 ## ✅ 初始化完成
 

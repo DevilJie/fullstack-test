@@ -1,10 +1,20 @@
 # API 判断规则
 
+## service-info.json 位置
+
+**重要**：`service-info.json` 放在**项目根目录**（所有需求共享），不在需求目录下。
+
+```
+{项目根目录}/
+└── service-info.json    # API 规则在这里
+{需求编号}/
+└── feedback.md         # 问题追踪在需求目录下
+```
+
 ## service-info.json 格式
 
 ```json
 {
-  "requirement_id": "{REQ-XXX}",
   "created_at": "{ISO时间戳}",
   "backend": {
     "url": "http://localhost:8080",

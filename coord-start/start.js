@@ -2,14 +2,13 @@
 /**
  * coord-start 交互式初始化脚本
  * 使用 inquirer 提供终端菜单式交互
- * 
+ *
  * 用法: node start.js
  */
 
 const fs = require("fs");
 const path = require("path");
 
-// inquirer v8 API
 const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
 
@@ -29,9 +28,8 @@ async function createProject(projectRoot, reqId) {
     fs.mkdirSync(d, { recursive: true });
   }
 
-  // service-info.json
+  // service-info.json - 放在项目根目录（所有需求共享）
   const serviceInfo = {
-    requirement_id: reqId,
     created_at: new Date().toISOString(),
     backend: {
       url: "http://localhost:8080",
@@ -51,11 +49,17 @@ async function createProject(projectRoot, reqId) {
     },
   };
 
-  const serviceInfoPath = path.join(projectPath, "service-info.json");
+  // 放在项目根目录
+  const serviceInfoPath = path.join(projectRoot, "service-info.json");
   fs.writeFileSync(serviceInfoPath, JSON.stringify(serviceInfo, null, 2), "utf-8");
 
-  // README.md
+  // README.md - 放在需求目录下
   const readmeContent = `# ${reqId} 联调测试协调手册
+
+## 项目信息
+- 项目根目录: ${projectRoot}
+- 需求编号: ${reqId}
+- 服务配置: ${projectRoot}/service-info.json
 
 ## 角色
 - 后端开发 (backend)
@@ -72,21 +76,21 @@ async function createProject(projectRoot, reqId) {
 - \`/coord-backend-config\` - 后端配置
 
 ## 文件
-- service-info.json - 服务配置
+- ${projectRoot}/service-info.json - 服务配置（项目级，所有需求共享）
 - feedback.md - 问题追踪
 - closed.md - 已关闭问题
 `;
 
   fs.writeFileSync(path.join(projectPath, "README.md"), readmeContent, "utf-8");
 
-  // feedback.md
+  // feedback.md - 放在需求目录下
   fs.writeFileSync(
     path.join(projectPath, "feedback.md"),
     `# Feedback Log - ${reqId}\n\n## Items\n\n`,
     "utf-8"
   );
 
-  return projectPath;
+  return { projectPath, serviceInfoPath };
 }
 
 async function main() {
@@ -99,7 +103,7 @@ async function main() {
     {
       type: "list",
       name: "useCurrentDir",
-      message: "📁 项目根目录（当前工作目录）:",
+      message: "📁 项目根目录:",
       default: 0,
       choices: [
         { name: `✅ 使用当前目录: ${CWD}`, value: true },
@@ -206,24 +210,25 @@ async function main() {
 
   // Create project
   try {
-    await createProject(projectRoot, reqId);
+    const { serviceInfoPath } = await createProject(projectRoot, reqId);
 
-    // Update service-info.json with URL if provided
+    // Update service-info.json with URL if provided (放在项目根目录)
     if (serviceUrl) {
-      const serviceInfoPath = path.join(projectPath, "service-info.json");
-      const serviceInfo = JSON.parse(fs.readFileSync(serviceInfoPath, "utf-8"));
+      const info = JSON.parse(fs.readFileSync(serviceInfoPath, "utf-8"));
       if (role === "backend") {
-        serviceInfo.backend.url = serviceUrl;
+        info.backend.url = serviceUrl;
       } else if (role === "frontend") {
-        serviceInfo.frontend.url = serviceUrl;
+        info.frontend.url = serviceUrl;
       }
-      fs.writeFileSync(serviceInfoPath, JSON.stringify(serviceInfo, null, 2), "utf-8");
+      fs.writeFileSync(serviceInfoPath, JSON.stringify(info, null, 2), "utf-8");
     }
 
     console.log("\n" + "=".repeat(50));
     console.log("  ✅ 项目初始化完成！");
     console.log("=".repeat(50));
-    console.log(`\n  📂 项目路径: ${projectPath}`);
+    console.log(`\n  📂 项目根目录: ${projectRoot}`);
+    console.log(`  📋 需求目录: ${projectPath}`);
+    console.log(`  📄 服务配置: ${serviceInfoPath}`);
     console.log(`  👤 角色: ${role}`);
     if (serviceUrl) {
       console.log(`  🔗 服务 URL: ${serviceUrl}`);

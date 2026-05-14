@@ -4,14 +4,11 @@
  * 使用 inquirer 提供终端菜单式交互
  *
  * 用法: node start.js
- *
- * 必须在支持 TTY 的环境中运行！
  */
 
 const fs = require("fs");
 const path = require("path");
 
-// 使用 createPromptModule 而不是直接用 prompt
 const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
 
@@ -21,12 +18,6 @@ async function main() {
   console.log("\n" + "=".repeat(50));
   console.log("  Fullstack Test - 初始化联调项目");
   console.log("=".repeat(50) + "\n");
-
-  // 检查是否支持 TTY
-  if (!process.stdin.isTTY) {
-    console.log("  ⚠️  检测到非交互式环境");
-    console.log("  请确保在支持 TTY 的终端中运行\n");
-  }
 
   // Step 1: 工作目录
   const { workDirChoice, customWorkDir } = await prompt([
@@ -52,11 +43,6 @@ async function main() {
       },
     ]);
     workDir = inputDir.trim();
-  }
-
-  // 检查工作目录是否存在
-  if (!fs.existsSync(workDir)) {
-    console.log(`\n  📁 目录不存在，将被创建: ${workDir}`);
   }
 
   // Step 2: 需求编号
@@ -162,6 +148,12 @@ async function main() {
         },
       ]);
       frontendUrl = url;
+    }
+  } else {
+    if (role === "backend") {
+      console.log("\n  ✅ 后端将沿用已有配置中的 URL 和 API 规则");
+    } else if (role === "frontend") {
+      console.log("\n  ✅ 前端将沿用已有配置中的 URL");
     }
   }
 

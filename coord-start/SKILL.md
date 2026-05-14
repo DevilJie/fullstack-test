@@ -212,21 +212,25 @@ cat > {工作目录}/{需求编号}/README.md << 'EOF'
 - 测试报告目录: {需求编号}/testing/reports/
 EOF
 
-# 创建 feedback.md
+# 创建 feedback.md（严格按照 feedback-format.md 格式）
 cat > {工作目录}/{需求编号}/feedback.md << 'EOF'
 # Feedback Log - {需求编号}
 
 ## Items
 
+| # | assignee | from | priority | status | title |
+|---|----------|------|----------|--------|-------|
+
 EOF
 
-# 创建 closed.md
+# 创建 closed.md（严格按照 feedback-format.md 格式）
 cat > {工作目录}/{需求编号}/closed.md << 'EOF'
 # Closed Issues - {需求编号}
 
-## 已验证通过的问题
+## Items
 
-（问题修复并复测验证通过后移入此处归档）
+| # | assignee | from | priority | resolved_at | title |
+|---|----------|------|----------|-------------|-------|
 
 EOF
 ```

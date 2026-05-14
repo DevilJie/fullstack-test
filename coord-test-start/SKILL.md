@@ -150,16 +150,20 @@ cat {工作目录}/{需求编号}/feedback.md
 
 执行复测后，更新文档：
 
-**验证通过**：
+**验证通过**（严格按照 feedback-format.md 格式）：
 ```bash
-# 从 feedback.md 删除该问题
-# 添加到 closed.md
+# 1. 从 feedback.md 复制该问题到 closed.md
+# 2. 在 closed.md 的 Items 表格中添加一行
+# 3. 在 closed.md 中添加问题详情（包含 resolved_at 和 resolution）
+# 4. 从 feedback.md 删除该问题条目及其详情
 ```
 
 **验证失败**：
 ```bash
-# 在 feedback.md 中将状态从 resolved 改回 in_progress
-# 说明仍存在的问题
+# 在 feedback.md 中：
+# 1. 将该问题的 status 从 resolved 改回 in_progress
+# 2. 添加或更新 description 说明仍存在的问题
+# 3. resolved_at 和 resolution 保持空白
 ```
 
 ### 步骤 7：执行新测试

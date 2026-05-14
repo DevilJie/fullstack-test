@@ -95,9 +95,28 @@ cat {工作目录}/{需求编号}/feedback.md
 ### 步骤 5：更新 feedback.md
 
 将问题的状态从 `in_progress` 改为 `resolved`，并记录解决时间和解决方案：
+
+**严格按照 feedback-format.md 格式更新**：
+
 ```bash
-# 更新 feedback.md 中的问题状态为 resolved
-# 记录：解决时间、解决方案、谁解决的
+# 1. 在 Items 表格中找到该问题，更新 status 为 resolved
+# 2. 在问题详情的 resolved_at 和 resolution 字段填写内容
+```
+
+问题详情格式：
+```
+### #{编号} - {标题}
+**assignee**: {backend/frontend}
+**from**: {testing/frontend/backend}
+**priority**: {high/medium/low}
+**status**: resolved
+**title**: {简短描述}
+**description**: {详细说明}
+**related**: #{关联编号} (可选)
+**needed**: {阻塞时需要的支持} (可选)
+**created_at**: {时间戳}
+**resolved_at**: {当前时间戳}
+**resolution**: {解决方案简述}
 ```
 
 ### 步骤 6：提醒测试复测

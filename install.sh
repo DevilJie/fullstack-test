@@ -1,19 +1,18 @@
 #!/bin/bash
 #
 # Fullstack Test - One-Click Install Script
-# Description: Clone and install fullstack-test skill/plugin for OpenClaw, Claude Code
-# Usage: curl -sL <repo-url>/install.sh | bash
-#   Or: bash install.sh [openclaw|claude|all]
+# Description: Install fullstack-test main skill + 7 sub-skills for OpenClaw / Claude Code
+# Usage: bash install.sh [openclaw|claude|all]
 #
 
 set -e
 
 SKILL_NAME="fullstack-test"
-# 默认从 Codeup 克隆（如果本地没有源码）
-DEFAULT_REPO="https://codeup.aliyun.com/668647a62300ebb98e4e54fd/hsj/skills/fullstack-test.git"
+DEFAULT_REPO="https://github.com/DevilJie/fullstack-test.git"
 SOURCE_DIR="$HOME/.local/share/fullstack-test"
-INSTALL_TARGET_OPENCLAW="$HOME/.openclaw/skills/${SKILL_NAME}"
-INSTALL_TARGET_CLAUDE="$HOME/.claude/skills/${SKILL_NAME}"
+
+# 子 skill 列表
+SUB_SKILLS="coord-start coord-status coord-poll coord-test-start coord-resolve coord-done coord-backend-config"
 
 # Colors
 RED='\033[0;31m'
@@ -45,7 +44,6 @@ fi
 
 # 检查本地是否已有源码
 get_source_dir() {
-  # 优先使用本地已有的工作区源码
   if [[ -d "/home/czy/workspace/ai/skills/${SKILL_NAME}" ]]; then
     echo "/home/czy/workspace/ai/skills/${SKILL_NAME}"
     return 0
@@ -69,11 +67,10 @@ install_source() {
     return 0
   fi
 
-  # 询问用户是否要从远程克隆
-  read -p "未找到本地源码，是否从 Codeup 克隆？[Y/n]: " -n 1 -r 2>&1
+  read -p "未找到本地源码，是否从 GitHub 克隆？[Y/n]: " -n 1 -r 2>&1
   echo ""
   if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-    info "从 Codeup 克隆到 $SOURCE_DIR ..."
+    info "从 GitHub 克隆到 $SOURCE_DIR ..."
     git clone "$DEFAULT_REPO" "$SOURCE_DIR"
   else
     error "请先克隆仓库或确保本地源码存在于 /home/czy/workspace/ai/skills/"
@@ -81,71 +78,87 @@ install_source() {
   fi
 }
 
-# 解析 token 用于克隆
-get_token() {
-  if [[ -f "/home/czy/workspace/ai/token" ]]; then
-    cat "/home/czy/workspace/ai/token"
-    return 0
+# 安装主 skill for OpenClaw
+install_openclaw_main() {
+  local src_dir="$1"
+  local target="$HOME/.openclaw/skills/${SKILL_NAME}"
+
+  info "Installing OpenClaw main skill..."
+  mkdir -p "$(dirname "$target")"
+
+  if [[ -L "$target" ]]; then
+    rm "$target"
+  elif [[ -d "$target" ]]; then
+    rm -rf "$target"
   fi
-  return 1
+
+  ln -s "$src_dir" "$target"
+  info "Created: $target"
 }
 
-# 安装 for OpenClaw
-install_openclaw() {
-  info "Installing for OpenClaw..."
+# 安装子 skill for Claude Code
+install_claude_sub_skills() {
+  local src_dir="$1"
 
-  local src_dir
-  src_dir=$(get_source_dir) || { error "未找到源码"; return 1; }
+  info "Installing Claude Code sub-skills..."
 
-  mkdir -p "$(dirname "$INSTALL_TARGET_OPENCLAW")"
+  for skill in $SUB_SKILLS; do
+    local target="$HOME/.claude/skills/$skill"
+    local src_sub="$src_dir/$skill"
 
-  if [[ -L "$INSTALL_TARGET_OPENCLAW" ]]; then
-    rm "$INSTALL_TARGET_OPENCLAW"
-    info "Removed old symlink: $INSTALL_TARGET_OPENCLAW"
-  elif [[ -d "$INSTALL_TARGET_OPENCLAW" ]]; then
-    warn "Removing existing directory: $INSTALL_TARGET_OPENCLAW"
-    rm -rf "$INSTALL_TARGET_OPENCLAW"
-  fi
+    if [[ ! -d "$src_sub" ]]; then
+      warn "Skipped (not found): $src_sub"
+      continue
+    fi
 
-  ln -s "$src_dir" "$INSTALL_TARGET_OPENCLAW"
-  info "Created symlink: $INSTALL_TARGET_OPENCLAW → $src_dir"
+    mkdir -p "$(dirname "$target")"
+
+    if [[ -L "$target" ]]; then
+      rm "$target"
+    elif [[ -d "$target" ]]; then
+      rm -rf "$target"
+    fi
+
+    ln -s "$src_sub" "$target"
+    info "Created: $target"
+  done
 }
 
-# 安装 for Claude Code / Codex
-install_claude() {
-  info "Installing for Claude Code / Codex..."
+# 安装主 skill for Claude Code（fullstack-test 作为总入口）
+install_claude_main() {
+  local src_dir="$1"
+  local target="$HOME/.claude/skills/${SKILL_NAME}"
 
-  local src_dir
-  src_dir=$(get_source_dir) || { error "未找到源码"; return 1; }
+  info "Installing Claude Code main skill..."
+  mkdir -p "$(dirname "$target")"
 
-  mkdir -p "$(dirname "$INSTALL_TARGET_CLAUDE")"
-
-  if [[ -L "$INSTALL_TARGET_CLAUDE" ]]; then
-    rm "$INSTALL_TARGET_CLAUDE"
-    info "Removed old symlink: $INSTALL_TARGET_CLAUDE"
-  elif [[ -d "$INSTALL_TARGET_CLAUDE" ]]; then
-    warn "Removing existing directory: $INSTALL_TARGET_CLAUDE"
-    rm -rf "$INSTALL_TARGET_CLAUDE"
+  if [[ -L "$target" ]]; then
+    rm "$target"
+  elif [[ -d "$target" ]]; then
+    rm -rf "$target"
   fi
 
-  ln -s "$src_dir" "$INSTALL_TARGET_CLAUDE"
-  info "Created symlink: $INSTALL_TARGET_CLAUDE → $src_dir"
+  ln -s "$src_dir" "$target"
+  info "Created: $target"
 }
 
 # 执行安装
 install_source
+src_dir=$(get_source_dir) || { error "未找到源码"; exit 1; }
 
 case "$MODE" in
   openclaw)
-    install_openclaw
+    install_openclaw_main "$src_dir"
     ;;
   claude)
-    install_claude
+    install_claude_main "$src_dir"
+    install_claude_sub_skills "$src_dir"
     ;;
   all)
-    install_openclaw
+    install_openclaw_main "$src_dir"
     echo ""
-    install_claude
+    install_claude_main "$src_dir"
+    install_claude_sub_skills "$src_dir"
     ;;
   *)
     error "Unknown mode: $MODE"
@@ -161,21 +174,31 @@ echo "=========================================="
 echo ""
 
 # Verify installation
-if [[ -L "$INSTALL_TARGET_OPENCLAW" ]]; then
-  info "OpenClaw: ✅ $INSTALL_TARGET_OPENCLAW"
+echo "Installed skills:"
+echo ""
+echo "OpenClaw:"
+if [[ -L "$HOME/.openclaw/skills/${SKILL_NAME}" ]]; then
+  echo "  ✅ ${SKILL_NAME}"
 else
-  warn "OpenClaw: ❌ symlink not created"
+  echo "  ❌ ${SKILL_NAME}"
 fi
 
-if [[ -L "$INSTALL_TARGET_CLAUDE" ]]; then
-  info "Claude Code: ✅ $INSTALL_TARGET_CLAUDE"
-else
-  warn "Claude Code: ❌ symlink not created"
+echo ""
+echo "Claude Code:"
+if [[ -L "$HOME/.claude/skills/${SKILL_NAME}" ]]; then
+  echo "  ✅ ${SKILL_NAME} (main)"
 fi
+
+for skill in $SUB_SKILLS; do
+  if [[ -L "$HOME/.claude/skills/$skill" ]]; then
+    echo "  ✅ $skill"
+  else
+    echo "  ❌ $skill"
+  fi
+done
 
 echo ""
 echo "Next steps:"
 echo "  1. Restart your OpenClaw gateway (if using OpenClaw)"
-echo "  2. For OpenClaw: /coord-start --help"
-echo "  3. For Claude Code: Use coord_start tool"
+echo "  2. Claude Code: Type / to see all available commands"
 echo ""

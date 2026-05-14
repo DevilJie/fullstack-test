@@ -15,22 +15,17 @@ const prompt = inquirer.createPromptModule();
 const CWD = process.cwd();
 
 function createServiceInfo(projectRoot, reqId, useProjectLevel, customServiceInfo) {
-  // service-info.json 放在项目根目录
   const serviceInfoPath = path.join(projectRoot, "service-info.json");
 
   let serviceInfo;
 
   if (useProjectLevel && fs.existsSync(serviceInfoPath)) {
-    // 沿用项目级配置
     serviceInfo = JSON.parse(fs.readFileSync(serviceInfoPath, "utf-8"));
-    // 添加 requirement_id 标记
     serviceInfo.requirement_id = reqId;
-    // 将 backend/frontend/testing 状态重置为 pending（新需求开始）
     serviceInfo.backend.status = "pending";
     serviceInfo.frontend.status = "pending";
     serviceInfo.testing.status = "pending";
   } else {
-    // 创建新配置（项目级或需求级）
     serviceInfo = {
       requirement_id: reqId,
       created_at: new Date().toISOString(),
@@ -62,7 +57,6 @@ function createServiceInfo(projectRoot, reqId, useProjectLevel, customServiceInf
 async function createProject(projectRoot, reqId, useProjectLevel, serviceInfo) {
   const projectPath = path.join(projectRoot, reqId);
 
-  // Create directories
   const dirs = [
     path.join(projectPath, "backend"),
     path.join(projectPath, "frontend"),
@@ -73,20 +67,15 @@ async function createProject(projectRoot, reqId, useProjectLevel, serviceInfo) {
     fs.mkdirSync(d, { recursive: true });
   }
 
-  // service-info.json - 根据 useProjectLevel 决定位置
   let serviceInfoPath;
   if (useProjectLevel) {
-    // 放在项目根目录
     serviceInfoPath = path.join(projectRoot, "service-info.json");
-    // 更新项目级配置
     fs.writeFileSync(serviceInfoPath, JSON.stringify(serviceInfo, null, 2), "utf-8");
   } else {
-    // 放在需求目录下
     serviceInfoPath = path.join(projectPath, "service-info.json");
     fs.writeFileSync(serviceInfoPath, JSON.stringify(serviceInfo, null, 2), "utf-8");
   }
 
-  // README.md - 放在需求目录下
   const configNote = useProjectLevel
     ? `服务配置: ${projectRoot}/service-info.json (项目级，所有需求共享)`
     : `服务配置: ${projectPath}/service-info.json (需求级，独立配置)`;
@@ -94,7 +83,7 @@ async function createProject(projectRoot, reqId, useProjectLevel, serviceInfo) {
   const readmeContent = `# ${reqId} 联调测试协调手册
 
 ## 项目信息
-- 项目根目录: ${projectRoot}
+- 工作目录: ${projectRoot}
 - 需求编号: ${reqId}
 - ${configNote}
 
@@ -120,7 +109,6 @@ async function createProject(projectRoot, reqId, useProjectLevel, serviceInfo) {
 
   fs.writeFileSync(path.join(projectPath, "README.md"), readmeContent, "utf-8");
 
-  // feedback.md
   fs.writeFileSync(
     path.join(projectPath, "feedback.md"),
     `# Feedback Log - ${reqId}\n\n## Items\n\n`,
@@ -135,38 +123,44 @@ async function main() {
   console.log("  Fullstack Test - 初始化联调项目");
   console.log("=".repeat(50) + "\n");
 
-  // Step 1: 选择项目根目录
-  const { useCurrentDir } = await prompt([
+  // Step 1: 询问工作目录（始终询问，用当前目录作为默认值）
+  const { workDir } = await prompt([
     {
-      type: "list",
-      name: "useCurrentDir",
-      message: "📁 项目根目录:",
-      default: 0,
-      choices: [
-        { name: `✅ 使用当前目录: ${CWD}`, value: true },
-        { name: "❌ 输入自定义目录", value: false },
-      ],
+      type: "input",
+      name: "workDir",
+      message: "📁 工作目录:",
+      default: CWD,
+      suffix: "\n  小字: 工作目录指的是所有测试工作的工作目录，会在此生成测试产物（报告、日志等）",
+      validate: (input) => {
+        if (!input.trim()) return "工作目录不能为空";
+        return true;
+      },
     },
   ]);
 
-  let projectRoot = CWD;
+  let projectRoot = workDir.trim();
 
-  if (!useCurrentDir) {
-    const { dirPath } = await prompt([
+  // 检查工作目录是否存在，不存在则创建
+  if (!fs.existsSync(projectRoot)) {
+    const { createDir } = await prompt([
       {
-        type: "input",
-        name: "dirPath",
-        message: "请输入项目根目录路径:",
-        validate: (input) => {
-          if (!input.trim()) return "路径不能为空";
-          return true;
-        },
+        type: "confirm",
+        name: "createDir",
+        message: `📁 目录不存在，是否创建? ${projectRoot}`,
+        default: true,
       },
     ]);
-    projectRoot = dirPath.trim();
+
+    if (!createDir) {
+      console.log("已取消。");
+      return;
+    }
+
+    fs.mkdirSync(projectRoot, { recursive: true });
+    console.log(`  ✅ 已创建目录: ${projectRoot}\n`);
   }
 
-  // 检查项目根目录是否已有 service-info.json
+  // 检查工作目录是否已有 service-info.json
   const projectServiceInfo = path.join(projectRoot, "service-info.json");
   const hasProjectServiceInfo = fs.existsSync(projectServiceInfo);
 
@@ -202,13 +196,13 @@ async function main() {
     }
   }
 
-  // Step 3: 选择服务配置策略（仅当项目已有 service-info.json 时）
+  // Step 3: 选择服务配置策略（仅当已有 service-info.json 时）
   let useProjectLevel = true;
   let serviceInfo;
 
   if (hasProjectServiceInfo) {
     console.log(`\n${"=".repeat(50)}`);
-    console.log("  📋 检测到项目级服务配置");
+    console.log("  📋 检测到已有服务配置");
     console.log("=".repeat(50));
     console.log(`  位置: ${projectServiceInfo}`);
 
@@ -220,10 +214,10 @@ async function main() {
       {
         type: "list",
         name: "configStrategy",
-        message: "🔧 需求目录的服务配置策略:",
+        message: "🔧 需求的服务配置策略:",
         default: 0,
         choices: [
-          { name: "✅ 沿用项目级配置（推荐） - 所有需求共用同一份配置", value: "project" },
+          { name: "✅ 沿用已有配置（推荐） - 所有需求共用同一份配置", value: "project" },
           { name: "📝 创建独立配置 - 本需求使用单独的 service-info.json", value: "independent" },
         ],
       },
@@ -234,12 +228,10 @@ async function main() {
     if (useProjectLevel) {
       serviceInfo = createServiceInfo(projectRoot, reqId, true, null);
     } else {
-      // 读取项目配置作为默认值，让用户可以自定义
       const defaultInfo = JSON.parse(fs.readFileSync(projectServiceInfo, "utf-8"));
       serviceInfo = createServiceInfo(projectRoot, reqId, false, defaultInfo);
     }
   } else {
-    // 没有项目级配置，创建新的（作为项目级）
     serviceInfo = createServiceInfo(projectRoot, reqId, true, null);
   }
 
@@ -289,7 +281,7 @@ async function main() {
     serviceInfo.frontend.url = url;
   }
 
-  // Step 6: 后端需要配置 API 规则
+  // Step 6: 后端配置 API 规则
   if (role === "backend") {
     console.log("\n  🔧 API 成功判断规则配置:");
 
@@ -330,12 +322,12 @@ async function main() {
     const { serviceInfoPath } = await createProject(projectRoot, reqId, useProjectLevel, serviceInfo);
 
     console.log("\n" + "=".repeat(50));
-    console.log("  ✅ 项目初始化完成！");
+    console.log("  ✅ 初始化完成！");
     console.log("=".repeat(50));
-    console.log(`\n  📂 项目根目录: ${projectRoot}`);
+    console.log(`\n  📁 工作目录: ${projectRoot}`);
     console.log(`  📋 需求目录: ${projectPath}`);
     console.log(`  📄 服务配置: ${serviceInfoPath}`);
-    console.log(`  🔧 配置策略: ${useProjectLevel ? "项目级（所有需求共享）" : "需求级（独立配置）"}`);
+    console.log(`  🔧 配置策略: ${useProjectLevel ? "共用已有配置" : "创建独立配置"}`);
     console.log(`  👤 角色: ${role}`);
     if (serviceInfo.backend.url) {
       console.log(`  🔗 后端 URL: ${serviceInfo.backend.url}`);

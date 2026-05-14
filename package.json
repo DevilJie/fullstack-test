@@ -1,0 +1,16 @@
+{
+  "name": "fullstack-test-skill",
+  "version": "1.0.0",
+  "description": "全流程测试协调 skill",
+  "main": "scripts/coord.js",
+  "scripts": {
+    "start": "node scripts/coord.js",
+    "test": "echo \"Run tests from Claude Code\" && exit 0"
+  },
+  "dependencies": {
+    "playwright": "^1.60.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

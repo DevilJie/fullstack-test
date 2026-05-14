@@ -1,15 +1,17 @@
 #!/bin/bash
 #
 # Fullstack Test - One-Click Install Script
-# Description: Install fullstack-test skill/plugin for OpenClaw, Claude Code, and Codex
-# Usage: curl -sL <url>/install.sh | bash
-#   Or: bash install.sh
+# Description: Clone and install fullstack-test skill/plugin for OpenClaw, Claude Code
+# Usage: curl -sL <repo-url>/install.sh | bash
+#   Or: bash install.sh [openclaw|claude|all]
 #
 
 set -e
 
 SKILL_NAME="fullstack-test"
-SKILL_SOURCE="/home/czy/workspace/ai/skills/${SKILL_NAME}"
+# 默认从 Codeup 克隆（如果本地没有源码）
+DEFAULT_REPO="https://codeup.aliyun.com/668647a62300ebb98e4e54fd/hsj/skills/fullstack-test.git"
+SOURCE_DIR="$HOME/.local/share/fullstack-test"
 INSTALL_TARGET_OPENCLAW="$HOME/.openclaw/skills/${SKILL_NAME}"
 INSTALL_TARGET_CLAUDE="$HOME/.claude/skills/${SKILL_NAME}"
 
@@ -41,20 +43,59 @@ elif [[ -n "$1" ]]; then
   MODE="$1"
 fi
 
-# Check source exists
-if [[ ! -d "$SKILL_SOURCE" ]]; then
-  error "Source skill not found: $SKILL_SOURCE"
+# 检查本地是否已有源码
+get_source_dir() {
+  # 优先使用本地已有的工作区源码
+  if [[ -d "/home/czy/workspace/ai/skills/${SKILL_NAME}" ]]; then
+    echo "/home/czy/workspace/ai/skills/${SKILL_NAME}"
+    return 0
+  fi
+  if [[ -d "$SOURCE_DIR/.git" ]]; then
+    echo "$SOURCE_DIR"
+    return 0
+  fi
+  return 1
+}
+
+# 安装源码
+install_source() {
+  if [[ -d "/home/czy/workspace/ai/skills/${SKILL_NAME}" ]]; then
+    info "使用本地源码: /home/czy/workspace/ai/skills/${SKILL_NAME}"
+    return 0
+  fi
+
+  if [[ -d "$SOURCE_DIR/.git" ]]; then
+    info "使用已克隆的源码: $SOURCE_DIR"
+    return 0
+  fi
+
+  # 询问用户是否要从远程克隆
+  read -p "未找到本地源码，是否从 Codeup 克隆？[Y/n]: " -n 1 -r 2>&1
   echo ""
-  echo "Please clone the repository first:"
-  echo "  git clone <repo-url> /home/czy/workspace/ai/skills/"
-  exit 1
-fi
+  if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+    info "从 Codeup 克隆到 $SOURCE_DIR ..."
+    git clone "$DEFAULT_REPO" "$SOURCE_DIR"
+  else
+    error "请先克隆仓库或确保本地源码存在于 /home/czy/workspace/ai/skills/"
+    exit 1
+  fi
+}
 
-info "Source: $SKILL_SOURCE"
+# 解析 token 用于克隆
+get_token() {
+  if [[ -f "/home/czy/workspace/ai/token" ]]; then
+    cat "/home/czy/workspace/ai/token"
+    return 0
+  fi
+  return 1
+}
 
-# Install for OpenClaw
+# 安装 for OpenClaw
 install_openclaw() {
   info "Installing for OpenClaw..."
+
+  local src_dir
+  src_dir=$(get_source_dir) || { error "未找到源码"; return 1; }
 
   mkdir -p "$(dirname "$INSTALL_TARGET_OPENCLAW")"
 
@@ -66,13 +107,16 @@ install_openclaw() {
     rm -rf "$INSTALL_TARGET_OPENCLAW"
   fi
 
-  ln -s "$SKILL_SOURCE" "$INSTALL_TARGET_OPENCLAW"
-  info "Created symlink: $INSTALL_TARGET_OPENCLAW → $SKILL_SOURCE"
+  ln -s "$src_dir" "$INSTALL_TARGET_OPENCLAW"
+  info "Created symlink: $INSTALL_TARGET_OPENCLAW → $src_dir"
 }
 
-# Install for Claude Code / Codex
+# 安装 for Claude Code / Codex
 install_claude() {
   info "Installing for Claude Code / Codex..."
+
+  local src_dir
+  src_dir=$(get_source_dir) || { error "未找到源码"; return 1; }
 
   mkdir -p "$(dirname "$INSTALL_TARGET_CLAUDE")"
 
@@ -84,11 +128,13 @@ install_claude() {
     rm -rf "$INSTALL_TARGET_CLAUDE"
   fi
 
-  ln -s "$SKILL_SOURCE" "$INSTALL_TARGET_CLAUDE"
-  info "Created symlink: $INSTALL_TARGET_CLAUDE → $SKILL_SOURCE"
+  ln -s "$src_dir" "$INSTALL_TARGET_CLAUDE"
+  info "Created symlink: $INSTALL_TARGET_CLAUDE → $src_dir"
 }
 
-# Execute based on mode
+# 执行安装
+install_source
+
 case "$MODE" in
   openclaw)
     install_openclaw

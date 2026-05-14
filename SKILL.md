@@ -349,7 +349,7 @@ API 判断规则:
 
 ## /coord-resolve
 
-标记反馈问题已解决，移入 closed.md。
+标记反馈问题已解决，测试验证通过后正式移入 closed.md。
 
 ```
 /coord-resolve <编号> [解决方案]
@@ -359,28 +359,47 @@ API 判断规则:
 /coord-resolve 3
 ```
 
+
+### 触发条件
+
+以下条件**同时满足**时才能执行 /coord-resolve：
+1. 问题的 `status` 当前为 `resolved`（对方已修复，等待验证）
+2. 测试 agent 已验证该修复有效
+
 ### 执行流程
 
 1. 读取 `feedback.md` 中指定编号的问题
-2. 将 `status` 从 `resolved` 改为 `closed`
-3. 将该问题从 `feedback.md` 移动到 `closed.md`（保留完整记录）
-4. 在 `feedback.md` 中删除该条目
-5. `closed.md` 追加新条目（包含 resolved_at 和 resolution）
+2. 确认 `status` 为 `resolved`（表示对方已处理，等待测试验证）
+3. 确认测试已验证修复有效
+4. 在 `feedback.md` 中将 `status` 改为 `closed`
+5. 将该问题追加写入 `closed.md`（保留完整记录：created_at、resolved_at、resolution）
+6. 从 `feedback.md` 中删除该条目（已归档到 closed.md）
+
+### Feedback 状态机
+
+```
+open → acknowledged → in_progress → resolved → closed
+                   ↑                        ↓
+                   └── 对方已修复，待测试验证 ┘
+```
+
 
 ### Feedback 链式流转
 
 ```
-测试发现 Bug → 提交给前端 (#1)
+测试发现 Bug → 提交给前端 (#1，status: open)
      ↓
-前端定位到根因在后端 → 新建 #2 (assignee: backend, related: #1)
+前端定位到根因在后端 → 新建 #2 (assignee: backend，status: open)
      ↓
 前端暂时搁置 #1，等待 #2 解决
      ↓
-后端处理 #2 → /coord-resolve 2
+后端处理 #2 → /coord-resolve 2 → status: resolved（等待测试验证）
      ↓
-前端检测到 #2 closed → 处理 #1 → /coord-resolve 1
+测试验证 #2 有效 → /coord-resolve 2 → status: closed，移入 closed.md
      ↓
-#1 移入 closed.md
+前端处理 #1 → /coord-resolve 1 → status: resolved
+     ↓
+测试验证 #1 有效 → /coord-resolve 1 → status: closed，移入 closed.md
 ```
 
 ---

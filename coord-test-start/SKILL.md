@@ -117,15 +117,16 @@ EOF
 
 ### 步骤 5：检查复测需求
 
-检查 feedback.md 中是否有待复测的问题（状态为 resolved）：
+**只需要关注 feedback.md 中 resolved 状态的问题**
+
 ```bash
-# 读取 feedback.md
+# 只读取 feedback.md
 cat {工作目录}/{需求编号}/feedback.md
 ```
 
-如果有待复测的问题：
+过滤出 status 为 resolved 的问题：
 ```
-🔍 检测到待复测的问题：
+🔍 检测到待复测的问题（resolved 状态）：
 
 {列出所有 resolved 状态的问题}
 

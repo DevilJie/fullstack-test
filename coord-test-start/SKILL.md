@@ -124,52 +124,66 @@ EOF
 cat {工作目录}/{需求编号}/feedback.md
 ```
 
-过滤出 status 为 resolved 的问题：
+检查是否有 status 为 resolved 的问题：
+
+**如果没有待复测的问题**，跳过步骤 6，继续步骤 7：
 ```
-🔍 检测到待复测的问题（resolved 状态）：
+✅ 没有待复测的问题（feedback.md 中没有 resolved 状态的问题）
+
+继续执行新测试...
+```
+
+**如果有待复测的问题**，必须先处理：
+```
+⚠️  检测到待复测的问题（resolved 状态）：
 
 {列出所有 resolved 状态的问题}
 
-请先执行复测验证：
-- 如果问题已真正修复 → 移动到 closed.md
-- 如果问题未修复 → 状态改回 in_progress
+⚠️  【必须先处理】在继续新测试之前，必须先完成复测验证！
+⚠️  【必须先处理】验证通过后必须立即转移问题到 closed.md！
 ```
 
 ### 步骤 6：执行复测验证
 
-**重要：验证通过后必须立即将问题转移到 closed.md**
+**⚠️ 重要：在继续新测试之前，必须先完成所有复测验证！**
 
-对于每个待复测的问题：
+对于每个待复测的问题，逐个执行验证：
+
 ```
-🔬 复测验证：
+🔬 复测验证 - 问题 #{id}
 
-问题: {description}
+描述: {description}
 原解决方案: {solution}
 
-测试结果：
-1️⃣  ✅ 验证通过（问题已修复）→ 立即移动到 closed.md
-2️⃣  ❌ 验证失败（问题仍存在）→ 状态改回 in_progress
+请选择验证结果：
+1️⃣  ✅ 验证通过（问题已修复）
+2️⃣  ❌ 验证失败（问题仍存在）
 ```
 
-**验证通过后立即执行以下操作**：
+**选择 1️⃣ 验证通过后，必须立即执行以下操作**：
 
 ```bash
-# 1. 从 feedback.md 复制该问题到 closed.md
-#    - 在 closed.md 的 Items 表格中添加一行
-#    - 在 closed.md 中添加问题详情（包含 resolved_at 和 resolution）
+# 1. 将问题从 feedback.md 复制到 closed.md
+#    - 在 closed.md 的 Items 表格末尾添加一行
+#    - 在 closed.md 末尾添加问题详情块（包含 resolved_at 和 resolution）
 
-# 2. 从 feedback.md 删除该问题条目及其详情
+# 2. 从 feedback.md 删除该问题条目及其详情块
 
-# 3. ⚠️ 必须在继续之前完成上述操作，不能留到后面处理
+# 3. ⚠️ 操作完成后才能继续处理下一个问题
 ```
 
-**验证失败后**：
+**选择 2️⃣ 验证失败后**：
+
 ```bash
-# 在 feedback.md 中：
-# 1. 将该问题的 status 从 resolved 改回 in_progress
-# 2. 添加或更新 description 说明仍存在的问题
-# 3. resolved_at 和 resolution 保持空白
+# 在 feedback.md 中修改该问题：
+# 1. 将 status 从 "resolved" 改回 "in_progress"
+# 2. 在 description 末尾添加："【复测失败】{说明仍存在的问题}"
+# 3. resolved_at 和 resolution 保留原值不动
 ```
+
+**重复此步骤，直到所有 resolved 状态的问题都被处理完毕。**
+
+✅ 全部处理完毕后，才能继续步骤 7 执行新测试。
 
 ### 步骤 7：执行新测试
 

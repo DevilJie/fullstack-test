@@ -136,6 +136,8 @@ cat {工作目录}/{需求编号}/feedback.md
 
 ### 步骤 6：执行复测验证
 
+**重要：验证通过后必须立即将问题转移到 closed.md**
+
 对于每个待复测的问题：
 ```
 🔬 复测验证：
@@ -144,21 +146,23 @@ cat {工作目录}/{需求编号}/feedback.md
 原解决方案: {solution}
 
 测试结果：
-1️⃣  ✅ 验证通过（问题已修复）→ 移动到 closed.md
+1️⃣  ✅ 验证通过（问题已修复）→ 立即移动到 closed.md
 2️⃣  ❌ 验证失败（问题仍存在）→ 状态改回 in_progress
 ```
 
-执行复测后，更新文档：
+**验证通过后立即执行以下操作**：
 
-**验证通过**（严格按照 feedback-format.md 格式）：
 ```bash
 # 1. 从 feedback.md 复制该问题到 closed.md
-# 2. 在 closed.md 的 Items 表格中添加一行
-# 3. 在 closed.md 中添加问题详情（包含 resolved_at 和 resolution）
-# 4. 从 feedback.md 删除该问题条目及其详情
+#    - 在 closed.md 的 Items 表格中添加一行
+#    - 在 closed.md 中添加问题详情（包含 resolved_at 和 resolution）
+
+# 2. 从 feedback.md 删除该问题条目及其详情
+
+# 3. ⚠️ 必须在继续之前完成上述操作，不能留到后面处理
 ```
 
-**验证失败**：
+**验证失败后**：
 ```bash
 # 在 feedback.md 中：
 # 1. 将该问题的 status 从 resolved 改回 in_progress
